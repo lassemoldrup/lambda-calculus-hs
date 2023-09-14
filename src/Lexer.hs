@@ -6,6 +6,7 @@ type Ident = String
 
 data Token = Id Ident | Lambda | Dot | LParen | RParen deriving (Show)
 
+-- Produces a reversed list of tokens
 tokenize :: String -> [Token]
 tokenize = tokenizeInner []
 

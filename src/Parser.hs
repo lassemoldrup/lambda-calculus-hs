@@ -7,6 +7,7 @@ data Term = Var Ident | Abs Ident Term | App Term Term deriving (Show)
 
 data TokenTree = Tree [TokenTree] | Id Ident | Lambda | Dot deriving (Show)
 
+-- Takes a reversed list of tokens
 parse :: [Token] -> Term
 parse = parseTokenTrees . intoTokenTrees
 
