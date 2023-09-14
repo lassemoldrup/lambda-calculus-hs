@@ -29,15 +29,15 @@ parseApp acc (tt : tts) = parseApp (App acc $ parseTokenTree tt) tts
 intoTokenTrees :: [Token] -> [TokenTree]
 intoTokenTrees tks = case intoTokenTreesInner [] 0 tks of
   (tts, 0, []) -> tts
-  (_, _, []) -> error "Parser error: Missing ')'."
-  (_, _, _ : _) -> error "Parser error: Unexpected ')'."
+  (_, _, []) -> error "Parser error: Unexpected ')'."
+  (_, _, _ : _) -> error "Parser error: Missing ')'."
 
 intoTokenTreesInner :: [TokenTree] -> Int -> [Token] -> ([TokenTree], Int, [Token])
-intoTokenTreesInner acc depth [] = (reverse acc, depth, [])
+intoTokenTreesInner acc depth [] = (acc, depth, [])
 intoTokenTreesInner acc depth (Lexer.Id ident : tks) = intoTokenTreesInner (Id ident : acc) depth tks
 intoTokenTreesInner acc depth (Lexer.Lambda : tks) = intoTokenTreesInner (Lambda : acc) depth tks
 intoTokenTreesInner acc depth (Lexer.Dot : tks) = intoTokenTreesInner (Dot : acc) depth tks
-intoTokenTreesInner acc depth (Lexer.LParen : tks) =
+intoTokenTreesInner acc depth (Lexer.RParen : tks) =
   let (tts, newDepth, rest) = intoTokenTreesInner [] (depth + 1) tks
    in intoTokenTreesInner (Tree tts : acc) newDepth rest
-intoTokenTreesInner acc depth (Lexer.RParen : tks) = (reverse acc, depth - 1, tks)
+intoTokenTreesInner acc depth (Lexer.LParen : tks) = (acc, depth - 1, tks)

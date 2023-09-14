@@ -7,25 +7,28 @@ type Ident = String
 data Token = Id Ident | Lambda | Dot | LParen | RParen deriving (Show)
 
 tokenize :: String -> [Token]
-tokenize ('\\' : tail) = Lambda : tokenize tail
-tokenize ('λ' : tail) = Lambda : tokenize tail
-tokenize ('.' : tail) = Dot : tokenize tail
-tokenize ('(' : tail) = LParen : tokenize tail
-tokenize (')' : tail) = RParen : tokenize tail
-tokenize (ch : tail)
-  | isSpace ch = tokenize tail
+tokenize = tokenizeInner []
+
+tokenizeInner :: [Token] -> String -> [Token]
+tokenizeInner acc [] = acc
+tokenizeInner acc ('\\' : tail) = tokenizeInner (Lambda : acc) tail
+tokenizeInner acc ('λ' : tail) = tokenizeInner (Lambda : acc) tail
+tokenizeInner acc ('.' : tail) = tokenizeInner (Dot : acc) tail
+tokenizeInner acc ('(' : tail) = tokenizeInner (LParen : acc) tail
+tokenizeInner acc (')' : tail) = tokenizeInner (RParen : acc) tail
+tokenizeInner acc (ch : tail)
+  | isSpace ch = tokenizeInner acc tail
   | isAlpha ch =
       let (ident, identTail) = tokenizeId [ch] tail
-       in Id ident : tokenize identTail
+       in tokenizeInner (Id ident : acc) identTail
   | otherwise = error $ "Lexer error: Unrecognized character '" ++ ch : "'."
-tokenize [] = []
 
 tokenizeId :: Ident -> String -> (Ident, String)
 tokenizeId ident (ch : tail)
-  | isIdentEnd ch = (ident, ch : tail)
-  | isAlphaNum ch = tokenizeId (ident ++ [ch]) tail
+  | isIdentEnd ch = (reverse ident, ch : tail)
+  | isAlphaNum ch = tokenizeId (ch : ident) tail
   | otherwise = error $ "Lexer error: Invalid character '" ++ ch : "' in identifier."
-tokenizeId ident [] = (ident, [])
+tokenizeId ident [] = (reverse ident, [])
 
 isIdentEnd :: Char -> Bool
 isIdentEnd ch = ch == '\\' || ch == 'λ' || ch == '.' || ch == '(' || ch == ')' || isSpace ch
